@@ -2,13 +2,18 @@
 //  Renderer.swift
 //  FractalsShared
 //
-//  Created by Administrator on 26/03/2020.
+//  Created by Administrator on 22/05/2020.
 //  Copyright © 2020 Jon Taylor. All rights reserved.
 //
 
 import Metal
 import MetalKit
 import simd
+
+private struct Region {
+    var bottomLeft: simd_float2
+    var topRight: simd_float2
+}
 
 class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     
@@ -17,8 +22,9 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     private let mandelbrotPipelineState: MTLRenderPipelineState
     private var uniforms: FractalUniforms
     private let uniformsLength = MemoryLayout<FractalUniforms>.stride
+    private var region: Region
     private var needRender = true
-    
+
     init?(mtkView: MTKView, bundle: Bundle? = nil) {
         self.device = mtkView.device!
         guard let queue = self.device.makeCommandQueue() else { return nil }
@@ -39,7 +45,10 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             simd_float4(0, -1, 0, 0),
             simd_float4(0, 0, 1, 0),
             simd_float4(0, 0, 0, 1)))
-        uniforms.maxIterations = 1024
+        uniforms.maxIterations = 120
+        
+        region = Region(bottomLeft: simd_float2(-0.22, -0.7),
+                        topRight: simd_float2(-0.21, -0.69))
         
         super.init()
     }
@@ -70,15 +79,11 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     }
     
     private func renderMandelbrot(renderEncoder: MTLRenderCommandEncoder) {
-        let bottomLeftX = Float(-0.22)
-        let bottomLeftY = Float(-0.7)
-        let topRightX = Float(-0.21)
-        let topRightY = Float(-0.69)
         let vertices = [
-            FractalVertex(position: simd_float2(1, 1), region: simd_float2(topRightX, topRightY)),
-            FractalVertex(position: simd_float2(-1, 1), region: simd_float2(bottomLeftX, topRightY)),
-            FractalVertex(position: simd_float2(1, -1), region: simd_float2(topRightX, bottomLeftY)),
-            FractalVertex(position: simd_float2(-1, -1), region: simd_float2(bottomLeftX, bottomLeftY))
+            FractalVertex(position: simd_float2(1, 1), region: simd_float2(region.topRight.x, region.topRight.y)),
+            FractalVertex(position: simd_float2(-1, 1), region: simd_float2(region.bottomLeft.x, region.topRight.y)),
+            FractalVertex(position: simd_float2(1, -1), region: simd_float2(region.topRight.x, region.bottomLeft.y)),
+            FractalVertex(position: simd_float2(-1, -1), region: simd_float2(region.bottomLeft.x, region.bottomLeft.y))
         ]
         let verticesLength = MemoryLayout<FractalVertex>.stride * vertices.count
         renderEncoder.pushDebugGroup("Draw Fractal")
@@ -110,6 +115,28 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     }
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        
+        let cw = Float(size.width)
+        let ch = Float(size.height)
+        let rw = region.topRight.x - region.bottomLeft.x
+        let rh = region.topRight.y - region.bottomLeft.y
+        
+        if (cw > ch) {
+            let rwNew = cw * rh / ch
+            let rwDelta = rwNew - rw
+            let rwDeltaHalf = rwDelta / 2
+            region.bottomLeft.x -= rwDeltaHalf
+            region.topRight.x += rwDeltaHalf
+        }
+        
+        if (cw < ch) {
+            let rhNew = ch * rw / cw
+            let rhDelta = rhNew - rh
+            let rhDeltaHalf = rhDelta / 2
+            region.bottomLeft.y -= rhDeltaHalf
+            region.topRight.y += rhDeltaHalf
+        }
+        
         needRender = true
     }
 }

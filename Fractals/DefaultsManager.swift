@@ -2,7 +2,7 @@
 //  DefaultsManager.swift
 //  Fractals
 //
-//  Created by Administrator on 26/04/2020.
+//  Created by Administrator on 22/05/2020.
 //  Copyright © 2020 Jon Taylor. All rights reserved.
 //
 
@@ -12,7 +12,7 @@ import ScreenSaver
 private let KEY_ENABLE_MSAA = "enable-msaa"
 
 private let DEFAULTS: [String: Any] = [
-    KEY_ENABLE_MSAA: Settings.defaultEnableMSAA
+    KEY_ENABLE_MSAA: false
 ]
 
 class DefaultsManager {

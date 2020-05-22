@@ -2,7 +2,7 @@
 //  ShaderTypes.h
 //  FractalsShared
 //
-//  Created by Administrator on 26/03/2020.
+//  Created by Administrator on 22/05/2020.
 //  Copyright © 2020 Jon Taylor. All rights reserved.
 //
 

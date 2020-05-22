@@ -154,7 +154,7 @@
 			dependencies = (
 			);
 			name = FractalsApp;
-			productName = SolidLightWorksApp;
+			productName = FractalsApp;
 			productReference = C3504DCC242D74FF00C03609 /* FractalsApp.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -172,7 +172,7 @@
 			dependencies = (
 			);
 			name = Fractals;
-			productName = SolidLightWorks;
+			productName = Fractals;
 			productReference = C3C95098242C1BA400E775BD /* Fractals.saver */;
 			productType = "com.apple.product-type.bundle";
 		};

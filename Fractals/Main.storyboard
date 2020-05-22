@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15702"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Window Controller-->
+        <scene sceneID="TMb-Ro-cus">
+            <objects>
+                <windowController storyboardIdentifier="ConfigSheetWindowController" id="dYb-8A-KCC" sceneMemberID="viewController">
+                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="xgC-s9-b0Q">
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
+                        <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+                        <rect key="contentRect" x="196" y="240" width="480" height="270"/>
+                        <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+                        <connections>
+                            <outlet property="delegate" destination="dYb-8A-KCC" id="87V-3O-AKH"/>
+                        </connections>
+                    </window>
+                    <connections>
+                        <segue destination="nCc-gT-sFv" kind="relationship" relationship="window.shadowedContentViewController" id="QX6-AG-ndo"/>
+                    </connections>
+                </windowController>
+                <customObject id="bYO-ya-pab" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="138" y="87"/>
+        </scene>
+        <!--Config Sheet View Controller-->
+        <scene sceneID="Dcs-Ev-Ox1">
+            <objects>
+                <viewController id="nCc-gT-sFv" customClass="ConfigSheetViewController" customModule="Fractals" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="RWM-V5-Bcl">
+                        <rect key="frame" x="0.0" y="0.0" width="411" height="277"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eO8-Nv-7O3">
+                                <rect key="frame" x="315" y="13" width="82" height="32"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="70" id="nu7-g4-cRV"/>
+                                </constraints>
+                                <buttonCell key="cell" type="push" title="OK" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Rkv-0b-9IP">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="okButtonTapped:" target="nCc-gT-sFv" id="evW-5M-xyi"/>
+                                </connections>
+                            </button>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="uCY-P1-X14">
+                                <rect key="frame" x="233" y="13" width="82" height="32"/>
+                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="LZU-gh-aZ7">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="cancelButtonTapped:" target="nCc-gT-sFv" id="ZLY-SX-Esw"/>
+                                </connections>
+                            </button>
+                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TvR-qe-FIg">
+                                <rect key="frame" x="176" y="73" width="210" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="check" title="Enable MSAA (sample count 4)" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="Bgr-Zj-XmJ">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                            </button>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="eO8-Nv-7O3" firstAttribute="leading" secondItem="uCY-P1-X14" secondAttribute="trailing" constant="12" symbolic="YES" id="ES5-wg-fWb"/>
+                            <constraint firstItem="uCY-P1-X14" firstAttribute="baseline" secondItem="eO8-Nv-7O3" secondAttribute="baseline" id="WvM-rf-qew"/>
+                            <constraint firstAttribute="trailing" secondItem="eO8-Nv-7O3" secondAttribute="trailing" constant="20" symbolic="YES" id="fUL-Lp-xc9"/>
+                            <constraint firstAttribute="bottom" secondItem="uCY-P1-X14" secondAttribute="bottom" constant="20" symbolic="YES" id="yYD-BA-rRc"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="enableMSAACheck" destination="TvR-qe-FIg" id="vNN-hQ-SFG"/>
+                        <outlet property="okButton" destination="eO8-Nv-7O3" id="N87-io-pJq"/>
+                    </connections>
+                </viewController>
+                <customObject id="IIM-xs-qZ3" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="103.5" y="432.5"/>
+        </scene>
+    </scenes>
+</document>

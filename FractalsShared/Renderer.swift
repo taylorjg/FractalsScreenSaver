@@ -112,7 +112,6 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         pipelineDescriptor.label = "MandelbrotRenderPipeline"
         pipelineDescriptor.vertexFunction = vertexFunction
         pipelineDescriptor.fragmentFunction = fragmentFunction
-        pipelineDescriptor.sampleCount = mtkView.sampleCount
         
         let colorAttachments0 = pipelineDescriptor.colorAttachments[0]!
         colorAttachments0.pixelFormat = mtkView.colorPixelFormat

@@ -48,7 +48,7 @@ class FractalsView: ScreenSaverView {
     }
     
     override var hasConfigureSheet: Bool {
-        return true
+        return false
     }
     
     override var configureSheet: NSWindow? {

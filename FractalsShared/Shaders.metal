@@ -37,11 +37,13 @@ float4 loop(int maxIterations, constant float4 *colorMap, float cr, float ci, fl
 {
     int divergesAt = maxIterations - 1;
     for (int iteration = 0; iteration < maxIterations; iteration++) {
-        float zrNext = zr * zr - zi * zi + cr;
+        float zr2 = zr * zr;
+        float zi2 = zi * zi;
+        float zrNext = zr2 - zi2 + cr;
         float ziNext = 2.0 * zr * zi + ci;
         zr = zrNext;
         zi = ziNext;
-        if (zr * zr + zi * zi >= 4.0) {
+        if (zr2 + zi2 >= 4.0) {
             divergesAt = iteration;
             break;
         }

@@ -16,7 +16,7 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         case mandelbrot
         case julia
     }
-
+    
     private struct Region {
         var bottomLeft: simd_float2
         var topRight: simd_float2
@@ -67,8 +67,8 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             simd_float4(0, -1, 0, 0),
             simd_float4(0, 0, 1, 0),
             simd_float4(0, 0, 0, 1)))
-
-        maxIterations = 256
+        
+        maxIterations = 120
         colorMaps = [jet, gistStern, oceanData]
         colorMapIndex = 0
         
@@ -78,6 +78,51 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         juliaConstant = simd_float2(-0.22334650856389987, -0.6939525691699604)
         
         super.init()
+        
+        self.pan1()
+        self.zoom1()
+    }
+    
+    func pan1() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1/20) {
+            self.pan2()
+            self.pan1()
+        }
+    }
+    
+    func pan2() {
+        let pc = Float(0.1)
+        let rw = region.topRight.x - region.bottomLeft.x
+        let rwDelta = rw / 100 * pc
+        region.bottomLeft.x -= rwDelta
+        region.topRight.x -= rwDelta
+        let rh = region.topRight.y - region.bottomLeft.y
+        let rhDelta = rh / 100 * pc
+        region.bottomLeft.y -= rhDelta
+        region.topRight.y -= rhDelta
+        needRender = true
+    }
+    
+    func zoom1() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1/20) {
+            self.zoom2()
+            self.zoom1()
+        }
+    }
+    
+    func zoom2() {
+        let pc = Float(0.5)
+        let rw = region.topRight.x - region.bottomLeft.x
+        let rh = region.topRight.y - region.bottomLeft.y
+        let rwDelta = rw / 100 * pc
+        let rhDelta = rh / 100 * pc
+        let rwDeltaHalf = rwDelta / 2
+        let rhDeltaHalf = rhDelta / 2
+        region.bottomLeft.x += rwDeltaHalf
+        region.topRight.x -= rwDeltaHalf
+        region.bottomLeft.y += rhDeltaHalf
+        region.topRight.y -= rhDeltaHalf
+        needRender = true
     }
     
     func onSwitchFractal() {

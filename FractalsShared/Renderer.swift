@@ -10,30 +10,49 @@ import Metal
 import MetalKit
 import simd
 
-private struct Region {
-    var bottomLeft: simd_float2
-    var topRight: simd_float2
-}
-
 class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
+    
+    private enum Fractal {
+        case mandelbrot
+        case julia
+    }
+
+    private struct Region {
+        var bottomLeft: simd_float2
+        var topRight: simd_float2
+    }
     
     private let device: MTLDevice
     private let commandQueue: MTLCommandQueue
     private let mandelbrotPipelineState: MTLRenderPipelineState
+    private let juliaPipelineState: MTLRenderPipelineState
     private var uniforms: FractalUniforms
     private let uniformsLength = MemoryLayout<FractalUniforms>.stride
+    private var fractal = Fractal.mandelbrot
     private var region: Region
+    private var juliaConstant: simd_float2
     private var needRender = true
-
+    
     init?(mtkView: MTKView, bundle: Bundle? = nil) {
         self.device = mtkView.device!
         guard let queue = self.device.makeCommandQueue() else { return nil }
         self.commandQueue = queue
         
         do {
-            mandelbrotPipelineState = try Renderer.buildRenderPipelineState(device: device,
+            mandelbrotPipelineState = try Renderer.buildRenderPipelineState(name: "mandelbrot",
+                                                                            device: device,
                                                                             mtkView: mtkView,
                                                                             bundle: bundle)
+        } catch {
+            print("Unable to compile render pipeline state. Error info: \(error)")
+            return nil
+        }
+        
+        do {
+            juliaPipelineState = try Renderer.buildRenderPipelineState(name: "julia",
+                                                                       device: device,
+                                                                       mtkView: mtkView,
+                                                                       bundle: bundle)
         } catch {
             print("Unable to compile render pipeline state. Error info: \(error)")
             return nil
@@ -45,18 +64,30 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             simd_float4(0, -1, 0, 0),
             simd_float4(0, 0, 1, 0),
             simd_float4(0, 0, 0, 1)))
-        uniforms.maxIterations = 120
+        uniforms.maxIterations = 256
         
         region = Region(bottomLeft: simd_float2(-0.22, -0.7),
                         topRight: simd_float2(-0.21, -0.69))
         
+        juliaConstant = simd_float2(-0.22334650856389987, -0.6939525691699604)
+        
         super.init()
     }
     
-    func onSwitchForm() {
+    func onSwitchFractal() {
+        switch fractal {
+        case .mandelbrot:
+            fractal = .julia
+            break
+        case .julia:
+            fractal = .mandelbrot
+            break
+        }
+        needRender = true
     }
     
-    class func buildRenderPipelineState(device: MTLDevice,
+    class func buildRenderPipelineState(name: String,
+                                        device: MTLDevice,
                                         mtkView: MTKView,
                                         bundle: Bundle?) throws -> MTLRenderPipelineState {
         let library = bundle != nil
@@ -64,7 +95,7 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             : device.makeDefaultLibrary()
         
         let vertexFunction = library?.makeFunction(name: "vertexShader")
-        let fragmentFunction = library?.makeFunction(name: "mandelbrotShader")
+        let fragmentFunction = library?.makeFunction(name: "\(name)Shader")
         
         let pipelineDescriptor = MTLRenderPipelineDescriptor()
         pipelineDescriptor.label = "MandelbrotRenderPipeline"
@@ -96,6 +127,26 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         renderEncoder.popDebugGroup()
     }
     
+    private func renderJulia(renderEncoder: MTLRenderCommandEncoder, juliaConstant: simd_float2) {
+        let vertices = [
+            FractalVertex(position: simd_float2(1, 1), region: simd_float2(region.topRight.x, region.topRight.y)),
+            FractalVertex(position: simd_float2(-1, 1), region: simd_float2(region.bottomLeft.x, region.topRight.y)),
+            FractalVertex(position: simd_float2(1, -1), region: simd_float2(region.topRight.x, region.bottomLeft.y)),
+            FractalVertex(position: simd_float2(-1, -1), region: simd_float2(region.bottomLeft.x, region.bottomLeft.y))
+        ]
+        let verticesLength = MemoryLayout<FractalVertex>.stride * vertices.count
+        renderEncoder.pushDebugGroup("Draw Fractal")
+        renderEncoder.setRenderPipelineState(juliaPipelineState)
+        renderEncoder.setVertexBytes(&uniforms, length: uniformsLength, index: 0)
+        renderEncoder.setVertexBytes(vertices, length: verticesLength, index: 1)
+        renderEncoder.setFragmentBytes(&uniforms, length: uniformsLength, index: 0)
+        renderEncoder.setFragmentBytes(jet, length: 4 * 4 * 256, index: 1)
+        var juliaConstant = juliaConstant
+        renderEncoder.setFragmentBytes(&juliaConstant, length: MemoryLayout<simd_float2>.stride, index: 2)
+        renderEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: vertices.count)
+        renderEncoder.popDebugGroup()
+    }
+    
     func draw(in view: MTKView) {
         if !needRender {
             return
@@ -105,7 +156,14 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             let renderPassDescriptor = view.currentRenderPassDescriptor
             if let renderPassDescriptor = renderPassDescriptor,
                 let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) {
-                renderMandelbrot(renderEncoder: renderEncoder)
+                switch fractal {
+                case .mandelbrot:
+                    renderMandelbrot(renderEncoder: renderEncoder)
+                    break
+                case .julia:
+                    renderJulia(renderEncoder: renderEncoder, juliaConstant: juliaConstant)
+                    break
+                }
                 renderEncoder.endEncoding()
             }
             view.currentDrawable.map(commandBuffer.present)

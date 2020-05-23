@@ -9,5 +9,5 @@
 import Foundation
 
 protocol KeyboardControlDelegate {
-    func onSwitchForm()
+    func onSwitchFractal()
 }

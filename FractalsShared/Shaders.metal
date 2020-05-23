@@ -33,15 +33,8 @@ vertex FractalInOut vertexShader(uint vertexID [[vertex_id]],
     return out;
 }
 
-fragment float4 mandelbrotShader(FractalInOut in [[stage_in]],
-                                 constant FractalUniforms &uniforms [[buffer(0)]],
-                                 constant float4 *colormap [[buffer(1)]])
+float4 loop(int maxIterations, constant float4 *colormap, float cr, float ci, float zr, float zi)
 {
-    float cr = in.region.x;
-    float ci = in.region.y;
-    float zr = 0.0;
-    float zi = 0.0;
-    int maxIterations = uniforms.maxIterations;
     int divergesAt = maxIterations - 1;
     for (int iteration = 0; iteration < maxIterations; iteration++) {
         float zrNext = zr * zr - zi * zi + cr;
@@ -55,4 +48,27 @@ fragment float4 mandelbrotShader(FractalInOut in [[stage_in]],
     }
     int index = 256 * divergesAt / maxIterations;
     return colormap[index];
+}
+
+fragment float4 mandelbrotShader(FractalInOut in [[stage_in]],
+                                 constant FractalUniforms &uniforms [[buffer(0)]],
+                                 constant float4 *colormap [[buffer(1)]])
+{
+    float cr = in.region.x;
+    float ci = in.region.y;
+    float zr = 0.0;
+    float zi = 0.0;
+    return loop(uniforms.maxIterations, colormap, cr, ci, zr, zi);
+}
+
+fragment float4 juliaShader(FractalInOut in [[stage_in]],
+                            constant FractalUniforms &uniforms [[buffer(0)]],
+                            constant float4 *colormap [[buffer(1)]],
+                            constant float2 &juliaConstant [[buffer(2)]])
+{
+    float cr = juliaConstant.x;
+    float ci = juliaConstant.y;
+    float zr = in.region.x;
+    float zi = in.region.y;
+    return loop(uniforms.maxIterations, colormap, cr, ci, zr, zi);
 }

@@ -28,6 +28,9 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     private let juliaPipelineState: MTLRenderPipelineState
     private var uniforms: FractalUniforms
     private let uniformsLength = MemoryLayout<FractalUniforms>.stride
+    private var maxIterations: Int
+    private var colorMaps: [[simd_float4]]
+    private var colorMapIndex: Int
     private var fractal = Fractal.mandelbrot
     private var region: Region
     private var juliaConstant: simd_float2
@@ -64,7 +67,10 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             simd_float4(0, -1, 0, 0),
             simd_float4(0, 0, 1, 0),
             simd_float4(0, 0, 0, 1)))
-        uniforms.maxIterations = 256
+
+        maxIterations = 256
+        colorMaps = [jet, gistStern, oceanData]
+        colorMapIndex = 0
         
         region = Region(bottomLeft: simd_float2(-0.22, -0.7),
                         topRight: simd_float2(-0.21, -0.69))
@@ -83,6 +89,11 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             fractal = .mandelbrot
             break
         }
+        needRender = true
+    }
+    
+    func onSwitchColorMap() {
+        colorMapIndex = (colorMapIndex + 1) % colorMaps.count
         needRender = true
     }
     
@@ -117,12 +128,15 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             FractalVertex(position: simd_float2(-1, -1), region: simd_float2(region.bottomLeft.x, region.bottomLeft.y))
         ]
         let verticesLength = MemoryLayout<FractalVertex>.stride * vertices.count
+        uniforms.maxIterations = Int32(maxIterations)
+        let colorMap = colorMaps[colorMapIndex]
+        let colorMapLength = MemoryLayout<simd_float4>.stride * colorMap.count
         renderEncoder.pushDebugGroup("Draw Fractal")
         renderEncoder.setRenderPipelineState(mandelbrotPipelineState)
         renderEncoder.setVertexBytes(&uniforms, length: uniformsLength, index: 0)
         renderEncoder.setVertexBytes(vertices, length: verticesLength, index: 1)
         renderEncoder.setFragmentBytes(&uniforms, length: uniformsLength, index: 0)
-        renderEncoder.setFragmentBytes(jet, length: 4 * 4 * 256, index: 1)
+        renderEncoder.setFragmentBytes(colorMap, length: colorMapLength, index: 1)
         renderEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: vertices.count)
         renderEncoder.popDebugGroup()
     }
@@ -135,12 +149,15 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             FractalVertex(position: simd_float2(-1, -1), region: simd_float2(region.bottomLeft.x, region.bottomLeft.y))
         ]
         let verticesLength = MemoryLayout<FractalVertex>.stride * vertices.count
+        uniforms.maxIterations = Int32(maxIterations)
+        let colorMap = colorMaps[colorMapIndex]
+        let colorMapLength = MemoryLayout<simd_float4>.stride * colorMap.count
         renderEncoder.pushDebugGroup("Draw Fractal")
         renderEncoder.setRenderPipelineState(juliaPipelineState)
         renderEncoder.setVertexBytes(&uniforms, length: uniformsLength, index: 0)
         renderEncoder.setVertexBytes(vertices, length: verticesLength, index: 1)
         renderEncoder.setFragmentBytes(&uniforms, length: uniformsLength, index: 0)
-        renderEncoder.setFragmentBytes(jet, length: 4 * 4 * 256, index: 1)
+        renderEncoder.setFragmentBytes(colorMap, length: colorMapLength, index: 1)
         var juliaConstant = juliaConstant
         renderEncoder.setFragmentBytes(&juliaConstant, length: MemoryLayout<simd_float2>.stride, index: 2)
         renderEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: vertices.count)

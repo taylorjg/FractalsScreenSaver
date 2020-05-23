@@ -8,261 +8,194 @@
 
 import Foundation
 
-let jet = [
-    simd_float4(0, 0, 0.5, 1),
-    simd_float4(0, 0, 0.517825311942959, 1),
-    simd_float4(0, 0, 0.535650623885918, 1),
-    simd_float4(0, 0, 0.553475935828877, 1),
-    simd_float4(0, 0, 0.571301247771836, 1),
-    simd_float4(0, 0, 0.589126559714795, 1),
-    simd_float4(0, 0, 0.606951871657754, 1),
-    simd_float4(0, 0, 0.624777183600713, 1),
-    simd_float4(0, 0, 0.642602495543672, 1),
-    simd_float4(0, 0, 0.660427807486631, 1),
-    simd_float4(0, 0, 0.67825311942959, 1),
-    simd_float4(0, 0, 0.696078431372549, 1),
-    simd_float4(0, 0, 0.713903743315508, 1),
-    simd_float4(0, 0, 0.731729055258467, 1),
-    simd_float4(0, 0, 0.749554367201426, 1),
-    simd_float4(0, 0, 0.767379679144385, 1),
-    simd_float4(0, 0, 0.785204991087344, 1),
-    simd_float4(0, 0, 0.803030303030303, 1),
-    simd_float4(0, 0, 0.820855614973262, 1),
-    simd_float4(0, 0, 0.838680926916221, 1),
-    simd_float4(0, 0, 0.85650623885918, 1),
-    simd_float4(0, 0, 0.874331550802139, 1),
-    simd_float4(0, 0, 0.892156862745098, 1),
-    simd_float4(0, 0, 0.909982174688057, 1),
-    simd_float4(0, 0, 0.927807486631016, 1),
-    simd_float4(0, 0, 0.945632798573975, 1),
-    simd_float4(0, 0, 0.963458110516934, 1),
-    simd_float4(0, 0, 0.981283422459893, 1),
-    simd_float4(0, 0, 0.999108734402852, 1),
-    simd_float4(0, 0, 1, 1),
-    simd_float4(0, 0, 1, 1),
-    simd_float4(0, 0, 1, 1),
-    simd_float4(0, 0.00196078431372549, 1, 1),
-    simd_float4(0, 0.01764705882352941, 1, 1),
-    simd_float4(0, 0.03333333333333333, 1, 1),
-    simd_float4(0, 0.049019607843137254, 1, 1),
-    simd_float4(0, 0.06470588235294118, 1, 1),
-    simd_float4(0, 0.0803921568627451, 1, 1),
-    simd_float4(0, 0.09607843137254903, 1, 1),
-    simd_float4(0, 0.11176470588235295, 1, 1),
-    simd_float4(0, 0.12745098039215685, 1, 1),
-    simd_float4(0, 0.14313725490196078, 1, 1),
-    simd_float4(0, 0.1588235294117647, 1, 1),
-    simd_float4(0, 0.17450980392156862, 1, 1),
-    simd_float4(0, 0.19019607843137254, 1, 1),
-    simd_float4(0, 0.20588235294117646, 1, 1),
-    simd_float4(0, 0.22156862745098038, 1, 1),
-    simd_float4(0, 0.2372549019607843, 1, 1),
-    simd_float4(0, 0.2529411764705882, 1, 1),
-    simd_float4(0, 0.26862745098039215, 1, 1),
-    simd_float4(0, 0.28431372549019607, 1, 1),
-    simd_float4(0, 0.3, 1, 1),
-    simd_float4(0, 0.3156862745098039, 1, 1),
-    simd_float4(0, 0.33137254901960783, 1, 1),
-    simd_float4(0, 0.34705882352941175, 1, 1),
-    simd_float4(0, 0.3627450980392157, 1, 1),
-    simd_float4(0, 0.3784313725490196, 1, 1),
-    simd_float4(0, 0.3941176470588235, 1, 1),
-    simd_float4(0, 0.40980392156862744, 1, 1),
-    simd_float4(0, 0.42549019607843136, 1, 1),
-    simd_float4(0, 0.4411764705882353, 1, 1),
-    simd_float4(0, 0.4568627450980392, 1, 1),
-    simd_float4(0, 0.4725490196078431, 1, 1),
-    simd_float4(0, 0.48823529411764705, 1, 1),
-    simd_float4(0, 0.503921568627451, 1, 1),
-    simd_float4(0, 0.5196078431372549, 1, 1),
-    simd_float4(0, 0.5352941176470588, 1, 1),
-    simd_float4(0, 0.5509803921568628, 1, 1),
-    simd_float4(0, 0.5666666666666667, 1, 1),
-    simd_float4(0, 0.5823529411764706, 1, 1),
-    simd_float4(0, 0.5980392156862745, 1, 1),
-    simd_float4(0, 0.6137254901960785, 1, 1),
-    simd_float4(0, 0.6294117647058823, 1, 1),
-    simd_float4(0, 0.6450980392156863, 1, 1),
-    simd_float4(0, 0.6607843137254902, 1, 1),
-    simd_float4(0, 0.6764705882352942, 1, 1),
-    simd_float4(0, 0.692156862745098, 1, 1),
-    simd_float4(0, 0.707843137254902, 1, 1),
-    simd_float4(0, 0.7235294117647059, 1, 1),
-    simd_float4(0, 0.7392156862745098, 1, 1),
-    simd_float4(0, 0.7549019607843137, 1, 1),
-    simd_float4(0, 0.7705882352941177, 1, 1),
-    simd_float4(0, 0.7862745098039216, 1, 1),
-    simd_float4(0, 0.8019607843137255, 1, 1),
-    simd_float4(0, 0.8176470588235294, 1, 1),
-    simd_float4(0, 0.8333333333333334, 1, 1),
-    simd_float4(0, 0.8490196078431372, 1, 1),
-    simd_float4(0, 0.8647058823529412, 0.9962049335863378, 1),
-    simd_float4(0, 0.8803921568627451, 0.9835547122074637, 1),
-    simd_float4(0, 0.8960784313725491, 0.9709044908285895, 1),
-    simd_float4(0.009487666034155596, 0.9117647058823529, 0.9582542694497154, 1),
-    simd_float4(0.022137887413029723, 0.9274509803921569, 0.9456040480708413, 1),
-    simd_float4(0.03478810879190385, 0.9431372549019608, 0.9329538266919671, 1),
-    simd_float4(0.04743833017077798, 0.9588235294117647, 0.920303605313093, 1),
-    simd_float4(0.06008855154965211, 0.9745098039215686, 0.9076533839342189, 1),
-    simd_float4(0.07273877292852624, 0.9901960784313726, 0.8950031625553447, 1),
-    simd_float4(0.08538899430740036, 1, 0.8823529411764706, 1),
-    simd_float4(0.0980392156862745, 1, 0.8697027197975965, 1),
-    simd_float4(0.11068943706514862, 1, 0.8570524984187223, 1),
-    simd_float4(0.12333965844402275, 1, 0.8444022770398483, 1),
-    simd_float4(0.13598987982289687, 1, 0.8317520556609741, 1),
-    simd_float4(0.148640101201771, 1, 0.8191018342820999, 1),
-    simd_float4(0.16129032258064513, 1, 0.8064516129032259, 1),
-    simd_float4(0.17394054395951927, 1, 0.7938013915243517, 1),
-    simd_float4(0.1865907653383934, 1, 0.7811511701454776, 1),
-    simd_float4(0.19924098671726753, 1, 0.7685009487666035, 1),
-    simd_float4(0.21189120809614165, 1, 0.7558507273877293, 1),
-    simd_float4(0.2245414294750158, 1, 0.7432005060088551, 1),
-    simd_float4(0.2371916508538899, 1, 0.7305502846299811, 1),
-    simd_float4(0.24984187223276405, 1, 0.717900063251107, 1),
-    simd_float4(0.26249209361163817, 1, 0.7052498418722328, 1),
-    simd_float4(0.2751423149905123, 1, 0.6925996204933587, 1),
-    simd_float4(0.2877925363693864, 1, 0.6799493991144845, 1),
-    simd_float4(0.30044275774826057, 1, 0.6672991777356103, 1),
-    simd_float4(0.3130929791271347, 1, 0.6546489563567363, 1),
-    simd_float4(0.3257432005060088, 1, 0.6419987349778622, 1),
-    simd_float4(0.3383934218848829, 1, 0.629348513598988, 1),
-    simd_float4(0.3510436432637571, 1, 0.6166982922201139, 1),
-    simd_float4(0.3636938646426312, 1, 0.6040480708412397, 1),
-    simd_float4(0.3763440860215053, 1, 0.5913978494623656, 1),
-    simd_float4(0.38899430740037944, 1, 0.5787476280834916, 1),
-    simd_float4(0.4016445287792536, 1, 0.5660974067046174, 1),
-    simd_float4(0.4142947501581277, 1, 0.5534471853257432, 1),
-    simd_float4(0.42694497153700184, 1, 0.540796963946869, 1),
-    simd_float4(0.43959519291587595, 1, 0.5281467425679949, 1),
-    simd_float4(0.45224541429475007, 1, 0.5154965211891208, 1),
-    simd_float4(0.46489563567362424, 1, 0.5028462998102468, 1),
-    simd_float4(0.47754585705249836, 1, 0.4901960784313726, 1),
-    simd_float4(0.4901960784313725, 1, 0.4775458570524984, 1),
-    simd_float4(0.5028462998102466, 1, 0.46489563567362435, 1),
-    simd_float4(0.5154965211891207, 1, 0.4522454142947502, 1),
-    simd_float4(0.5281467425679949, 1, 0.439595192915876, 1),
-    simd_float4(0.540796963946869, 1, 0.42694497153700195, 1),
-    simd_float4(0.5534471853257431, 1, 0.4142947501581278, 1),
-    simd_float4(0.5660974067046173, 1, 0.4016445287792536, 1),
-    simd_float4(0.5787476280834913, 1, 0.38899430740037955, 1),
-    simd_float4(0.5913978494623655, 1, 0.3763440860215054, 1),
-    simd_float4(0.6040480708412397, 1, 0.3636938646426312, 1),
-    simd_float4(0.6166982922201137, 1, 0.35104364326375714, 1),
-    simd_float4(0.6293485135989879, 1, 0.338393421884883, 1),
-    simd_float4(0.641998734977862, 1, 0.3257432005060089, 1),
-    simd_float4(0.6546489563567361, 1, 0.31309297912713474, 1),
-    simd_float4(0.6672991777356103, 1, 0.30044275774826057, 1),
-    simd_float4(0.6799493991144844, 1, 0.2877925363693865, 1),
-    simd_float4(0.6925996204933585, 1, 0.27514231499051234, 1),
-    simd_float4(0.7052498418722326, 1, 0.26249209361163817, 1),
-    simd_float4(0.7179000632511068, 1, 0.2498418722327641, 1),
-    simd_float4(0.730550284629981, 1, 0.23719165085388993, 1),
-    simd_float4(0.743200506008855, 1, 0.22454142947501587, 1),
-    simd_float4(0.7558507273877292, 1, 0.2118912080961417, 1),
-    simd_float4(0.7685009487666034, 1, 0.19924098671726753, 1),
-    simd_float4(0.7811511701454774, 1, 0.18659076533839347, 1),
-    simd_float4(0.7938013915243516, 1, 0.1739405439595193, 1),
-    simd_float4(0.8064516129032256, 1, 0.16129032258064513, 1),
-    simd_float4(0.8191018342820998, 1, 0.14864010120177107, 1),
-    simd_float4(0.831752055660974, 1, 0.1359898798228969, 1),
-    simd_float4(0.844402277039848, 1, 0.12333965844402273, 1),
-    simd_float4(0.8570524984187222, 1, 0.11068943706514867, 1),
-    simd_float4(0.8697027197975963, 1, 0.0980392156862745, 1),
-    simd_float4(0.8823529411764705, 1, 0.08538899430740043, 1),
-    simd_float4(0.8950031625553446, 1, 0.07273877292852626, 1),
-    simd_float4(0.9076533839342187, 1, 0.06008855154965209, 1),
-    simd_float4(0.9203036053130929, 1, 0.04743833017077803, 1),
-    simd_float4(0.932953826691967, 1, 0.03478810879190386, 1),
-    simd_float4(0.9456040480708411, 0.9883805374001455, 0.02213788741302969, 1),
-    simd_float4(0.9582542694497153, 0.973856209150327, 0.009487666034155628, 1),
-    simd_float4(0.9709044908285893, 0.9593318809005086, 0, 1),
-    simd_float4(0.9835547122074635, 0.9448075526506902, 0, 1),
-    simd_float4(0.9962049335863377, 0.9302832244008717, 0, 1),
-    simd_float4(1, 0.9157588961510532, 0, 1),
-    simd_float4(1, 0.9012345679012348, 0, 1),
-    simd_float4(1, 0.8867102396514164, 0, 1),
-    simd_float4(1, 0.872185911401598, 0, 1),
-    simd_float4(1, 0.8576615831517794, 0, 1),
-    simd_float4(1, 0.843137254901961, 0, 1),
-    simd_float4(1, 0.8286129266521426, 0, 1),
-    simd_float4(1, 0.8140885984023241, 0, 1),
-    simd_float4(1, 0.7995642701525056, 0, 1),
-    simd_float4(1, 0.7850399419026872, 0, 1),
-    simd_float4(1, 0.7705156136528688, 0, 1),
-    simd_float4(1, 0.7559912854030504, 0, 1),
-    simd_float4(1, 0.741466957153232, 0, 1),
-    simd_float4(1, 0.7269426289034134, 0, 1),
-    simd_float4(1, 0.712418300653595, 0, 1),
-    simd_float4(1, 0.6978939724037765, 0, 1),
-    simd_float4(1, 0.6833696441539581, 0, 1),
-    simd_float4(1, 0.6688453159041396, 0, 1),
-    simd_float4(1, 0.6543209876543212, 0, 1),
-    simd_float4(1, 0.6397966594045028, 0, 1),
-    simd_float4(1, 0.6252723311546844, 0, 1),
-    simd_float4(1, 0.6107480029048659, 0, 1),
-    simd_float4(1, 0.5962236746550474, 0, 1),
-    simd_float4(1, 0.5816993464052289, 0, 1),
-    simd_float4(1, 0.5671750181554105, 0, 1),
-    simd_float4(1, 0.5526506899055921, 0, 1),
-    simd_float4(1, 0.5381263616557737, 0, 1),
-    simd_float4(1, 0.5236020334059552, 0, 1),
-    simd_float4(1, 0.5090777051561368, 0, 1),
-    simd_float4(1, 0.4945533769063183, 0, 1),
-    simd_float4(1, 0.48002904865649987, 0, 1),
-    simd_float4(1, 0.46550472040668145, 0, 1),
-    simd_float4(1, 0.4509803921568629, 0, 1),
-    simd_float4(1, 0.4364560639070445, 0, 1),
-    simd_float4(1, 0.4219317356572261, 0, 1),
-    simd_float4(1, 0.40740740740740755, 0, 1),
-    simd_float4(1, 0.39288307915758913, 0, 1),
-    simd_float4(1, 0.3783587509077707, 0, 1),
-    simd_float4(1, 0.3638344226579523, 0, 1),
-    simd_float4(1, 0.34931009440813376, 0, 1),
-    simd_float4(1, 0.33478576615831535, 0, 1),
-    simd_float4(1, 0.3202614379084969, 0, 1),
-    simd_float4(1, 0.3057371096586785, 0, 1),
-    simd_float4(1, 0.29121278140886, 0, 1),
-    simd_float4(1, 0.27668845315904156, 0, 1),
-    simd_float4(1, 0.26216412490922314, 0, 1),
-    simd_float4(1, 0.24763979665940472, 0, 1),
-    simd_float4(1, 0.2331154684095862, 0, 1),
-    simd_float4(1, 0.21859114015976777, 0, 1),
-    simd_float4(1, 0.20406681190994935, 0, 1),
-    simd_float4(1, 0.18954248366013093, 0, 1),
-    simd_float4(1, 0.1750181554103124, 0, 1),
-    simd_float4(1, 0.16049382716049398, 0, 1),
-    simd_float4(1, 0.14596949891067557, 0, 1),
-    simd_float4(1, 0.13144517066085715, 0, 1),
-    simd_float4(1, 0.11692084241103862, 0, 1),
-    simd_float4(1, 0.1023965141612202, 0, 1),
-    simd_float4(1, 0.08787218591140178, 0, 1),
-    simd_float4(0.9991087344028523, 0.07334785766158336, 0, 1),
-    simd_float4(0.9812834224598933, 0.05882352941176483, 0, 1),
-    simd_float4(0.9634581105169343, 0.04429920116194641, 0, 1),
-    simd_float4(0.9456327985739753, 0.029774872912127992, 0, 1),
-    simd_float4(0.9278074866310163, 0.015250544662309573, 0, 1),
-    simd_float4(0.9099821746880573, 0.0007262164124910431, 0, 1),
-    simd_float4(0.8921568627450983, 0, 0, 1),
-    simd_float4(0.8743315508021392, 0, 0, 1),
-    simd_float4(0.8565062388591802, 0, 0, 1),
-    simd_float4(0.8386809269162212, 0, 0, 1),
-    simd_float4(0.8208556149732622, 0, 0, 1),
-    simd_float4(0.8030303030303032, 0, 0, 1),
-    simd_float4(0.7852049910873442, 0, 0, 1),
-    simd_float4(0.7673796791443852, 0, 0, 1),
-    simd_float4(0.7495543672014262, 0, 0, 1),
-    simd_float4(0.7317290552584672, 0, 0, 1),
-    simd_float4(0.7139037433155082, 0, 0, 1),
-    simd_float4(0.6960784313725492, 0, 0, 1),
-    simd_float4(0.6782531194295901, 0, 0, 1),
-    simd_float4(0.6604278074866311, 0, 0, 1),
-    simd_float4(0.6426024955436721, 0, 0, 1),
-    simd_float4(0.6247771836007131, 0, 0, 1),
-    simd_float4(0.606951871657754, 0, 0, 1),
-    simd_float4(0.589126559714795, 0, 0, 1),
-    simd_float4(0.571301247771836, 0, 0, 1),
-    simd_float4(0.553475935828877, 0, 0, 1),
-    simd_float4(0.535650623885918, 0, 0, 1),
-    simd_float4(0.517825311942959, 0, 0, 1),
-    simd_float4(0.5, 0, 0, 1)
+// https://github.com/matplotlib/matplotlib/blob/master/lib/matplotlib/_cm.py
+// https://github.com/matplotlib/matplotlib/blob/master/lib/matplotlib/colors.py
+
+let jet = buildColorMap(colorMapData: JET_DATA)
+let gistStern = buildColorMap(colorMapData: GIST_STERN_DATA)
+let oceanData = buildColorMap2(colorMapData: OCEAN_DATA)
+
+private struct ColorMapData {
+    let red: [[Float]]
+    let green: [[Float]]
+    let blue: [[Float]]
+}
+
+private struct ColorMapData2 {
+    let red: (Float) -> Float
+    let green: (Float) -> Float
+    let blue: (Float) -> Float
+}
+
+private let JET_DATA = ColorMapData(
+    red: [
+        [0, 0, 0],
+        [0.35, 0, 0],
+        [0.66, 1, 1],
+        [0.89, 1, 1],
+        [1, 0.5, 0.5]
+    ],
+    green: [
+        [0, 0, 0],
+        [0.125, 0, 0],
+        [0.375, 1, 1],
+        [0.64, 1, 1],
+        [0.91, 0, 0],
+        [1, 0, 0]
+    ],
+    blue: [
+        [0, 0.5, 0.5],
+        [0.11, 1, 1],
+        [0.34, 1, 1],
+        [0.65, 0, 0],
+        [1, 0, 0]
+])
+
+private let GIST_STERN_DATA = ColorMapData(
+    red: [
+        [0, 0, 0],
+        [0.0547, 1, 1],
+        [0.250, 0.027, 0.250],
+        [1, 1, 1]
+    ],
+    green: [
+        [0, 0, 0],
+        [1, 0, 0]
+    ],
+    blue: [
+        [0, 0, 0],
+        [0.5, 1, 1],
+        [0.735, 0, 0],
+        [1, 0, 0]
+])
+
+private let OCEAN_DATA = ColorMapData2(
+    red: gnuplotPaletteFunctions[23],
+    green: gnuplotPaletteFunctions[28],
+    blue: gnuplotPaletteFunctions[3])
+
+private let gnuplotPaletteFunctions: [(Float) -> Float] = [
+{ (_: Float) -> Float in 0 },
+{ (_: Float) -> Float in 0.5 },
+{ (_: Float) -> Float in 1 },
+{ (x: Float) -> Float in x },
+{ (x: Float) -> Float in pow(x, 2) },
+{ (x: Float) -> Float in pow(x, 3) },
+{ (x: Float) -> Float in pow(x, 4) },
+{ (x: Float) -> Float in sqrt(x) },
+{ (x: Float) -> Float in sqrt(sqrt(x)) },
+{ (x: Float) -> Float in sin(x * Float.pi / 2) },
+{ (x: Float) -> Float in cos(x * Float.pi / 2) },
+{ (x: Float) -> Float in abs(x - 0.5) },
+{ (x: Float) -> Float in pow(2 * x - 1, 2) },
+{ (x: Float) -> Float in sin(x * Float.pi) },
+{ (x: Float) -> Float in abs(cos(x * Float.pi)) },
+{ (x: Float) -> Float in sin(x * 2 * Float.pi) },
+{ (x: Float) -> Float in cos(x * 2 * Float.pi) },
+{ (x: Float) -> Float in abs(sin(x * 2 * Float.pi)) },
+{ (x: Float) -> Float in abs(cos(x * 2 * Float.pi)) },
+{ (x: Float) -> Float in abs(sin(x * 4 * Float.pi)) },
+{ (x: Float) -> Float in abs(cos(x * 4 * Float.pi)) },
+{ (x: Float) -> Float in 3 * x },
+{ (x: Float) -> Float in 3 * x - 1 },
+{ (x: Float) -> Float in 3 * x - 2 },
+{ (x: Float) -> Float in abs(3 * x - 1) },
+{ (x: Float) -> Float in abs(3 * x - 2) },
+{ (x: Float) -> Float in (3 * x - 1) / 2 },
+{ (x: Float) -> Float in (3 * x - 2) / 2 },
+{ (x: Float) -> Float in abs((3 * x - 1) / 2) },
+{ (x: Float) -> Float in abs((3 * x - 2) / 2) },
+{ (x: Float) -> Float in x / 0.32 - 0.78125 },
+{ (x: Float) -> Float in 2 * x - 0.84 },
+{ (x: Float) -> Float in x < 0.25 ? 4 * x : x < 0.92 ? -2 * x + 1.84 : x / 0.08 - 11.5 },
+{ (x: Float) -> Float in abs(2 * x - 0.5) },
+{ (x: Float) -> Float in 2 * x },
+{ (x: Float) -> Float in 2 * x - 0.5 },
+{ (x: Float) -> Float in 2 * x - 1 }
 ]
+
+private func buildColorMap(colorMapData: ColorMapData) -> [simd_float4] {
+    let n = 256
+    let rs = makeMappingArray(n: n, adata: colorMapData.red)
+    let gs = makeMappingArray(n: n, adata: colorMapData.green)
+    let bs = makeMappingArray(n: n, adata: colorMapData.blue)
+    return (0..<n).map { i in
+        simd_float4(rs[i], gs[i], bs[i], 1)
+    }
+}
+
+private func buildColorMap2(colorMapData: ColorMapData2) -> [simd_float4] {
+    let n = 256
+    let rs = makeMappingArray2(n: n, f: colorMapData.red)
+    let gs = makeMappingArray2(n: n, f: colorMapData.green)
+    let bs = makeMappingArray2(n: n, f: colorMapData.blue)
+    return (0..<n).map { i in
+        simd_float4(rs[i], gs[i], bs[i], 1)
+    }
+}
+
+private func makeMappingArray(n: Int, adata: [[Float]]) -> [Float] {
+    
+    var x = adata.map { e in e[0] }
+    let y0 = adata.map { e in e[1] }
+    let y1 = adata.map { e in e[2] }
+    
+    x = x.map { v in v * (Float(n) - 1) }
+    
+    var lut = [Float](repeating: 0, count: n)
+    let xind = (0..<n).map { n in n }
+    
+    let ind = Array(searchSorted(arr: x, vs: xind)
+        .dropFirst()
+        .dropLast())
+    
+    let distances = ind.indices.map { i -> Float in
+        let numerator = Float(xind[i + 1]) - x[ind[i] - 1]
+        let denominator = Float(x[ind[i]]) - x[ind[i] - 1]
+        return numerator / denominator
+    }
+    
+    ind.indices.forEach { i in
+        lut[i + 1] = distances[i] * (y0[ind[i]] - y1[ind[i] - 1]) + y1[ind[i] - 1]
+    }
+    
+    lut[0] = y1.first!
+    lut[n - 1] = y0.last!
+    
+    return lut.map(clipZeroToOne)
+}
+
+private func searchSorted(arr: [Float], vs: [Int]) -> [Int] {
+    var result = [Int](repeating: 0, count: vs.count)
+    let arrLen = arr.count
+    for i in 0..<vs.count {
+        let v = Float(vs[i])
+        var added = false
+        for j in 0..<arrLen {
+            if v <= arr[j] {
+                result[i] = j
+                added = true
+                break
+            }
+        }
+        if !added { result[i] = arrLen }
+    }
+    return result
+}
+
+private func makeMappingArray2(n: Int, f: (Float) -> Float) -> [Float] {
+    return linearSpaced(length: n, start: 0, stop: 1)
+        .map(f)
+        .map(clipZeroToOne)
+}
+
+private func linearSpaced(length: Int, start: Float, stop: Float) -> [Float] {
+    let step = (stop - start) / (Float(length) - 1)
+    var data = (0..<length).map { index in start + Float(index) * step }
+    data[length - 1] = stop
+    return data
+}
+
+private func clipZeroToOne(v: Float) -> Float {
+    return simd_clamp(v, 0, 1)
+}

@@ -20,6 +20,9 @@ class MyMTKView: MTKView {
     
     override func keyDown(with event: NSEvent) {
         switch Int(event.keyCode) {
+        case kVK_ANSI_C:
+            keyboardControlDelegate?.onSwitchColorMap()
+            break
         case kVK_ANSI_F:
             keyboardControlDelegate?.onSwitchFractal()
             break

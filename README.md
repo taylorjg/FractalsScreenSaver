@@ -6,11 +6,11 @@ This repo contains a macOS screensaver written in Swift/Metal that draws fractal
 
 I have implemented similar code to draw fractals a couple of times previously.
 
-The first time, I wrote the code in C#, used WPF for drawing and used OpenCL for GPGPU processing to calculate the pixels values - see [this repo](https://github.com/taylorjg/FractalsWpf). 
+The first time, I wrote the code in C#, used WPF for drawing and used OpenCL for GPGPU processing to calculate the pixel values - see [this repo](https://github.com/taylorjg/FractalsWpf). 
 
 The second time, I used JavaScript and WebGL - loosely based on [this example](https://github.com/gpjt/webgl-lessons/blob/master/example01/index.html). Even though it all worked fine, I didn't fully understand the WebGL implementation. It is only after implementing this code again in Swift/Metal that I finally understand how the code works! Also, I have spent quite a lot of time over the past few months reading books on THREE.js, WebGL, OpenGL and Metal.
 
-The missing piece in my understanding was the rasterization of primitives and the interpolation of vertex shader outputs. We pass a fixed quad to the vertex shader - 6 vertices forming 2 triangles that fill the viewport. So the vertex shader is only invoked 6 times - once per vertex. But the fragment shader is invoked for each pixel e.g. 2880 x 1800 = 5184000 times! More details can be found [here](https://en.wikibooks.org/wiki/GLSL_Programming/Rasterization).
+The missing piece in my understanding was the rasterization of primitives and the interpolation of vertex shader outputs (more details can be found [here](https://en.wikibooks.org/wiki/GLSL_Programming/Rasterization)). We draw a fixed quad - 4 vertices describing 2 triangles that fill the viewport. So the vertex shader is only invoked 4 times - once per vertex. But the fragment shader is invoked for each pixel e.g. 2880 x 1800 = 5184000 times! Each vertex has an associated `(x, y)` position within the fractal region currently being rendered. The vertex shader simply forwards (outputs) this value unchanged. These region position values are then interpolated for each invocation of the fragment shader.
 
 # TODO
 

@@ -23,7 +23,7 @@ vertex FractalInOut vertexShader(uint vertexID [[vertex_id]],
 {
     constant FractalVertex &fractalVertex = vertices[vertexID];
     
-    float4 position = float4(fractalVertex.position, 1.0, 1.0);
+    float4 position = float4(fractalVertex.position, 0, 1);
     
     FractalInOut out {
         .position = uniforms.modelViewMatrix * position,

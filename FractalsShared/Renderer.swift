@@ -20,6 +20,46 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     private struct Region {
         var bottomLeft: simd_float2
         var topRight: simd_float2
+        var topLeft: simd_float2 { return simd_float2(bottomLeft.x, topRight.y) }
+        var bottomRight: simd_float2 { return simd_float2(topRight.x, bottomLeft.y) }
+        mutating func pan(percent: Float) {
+            let width = topRight.x - bottomLeft.x
+            let widthDelta = width / 100 * percent
+            let height = topRight.y - bottomLeft.y
+            let heightDelta = height / 100 * percent
+            bottomLeft.x -= widthDelta
+            topRight.x -= widthDelta
+            bottomLeft.y -= heightDelta
+            topRight.y -= heightDelta
+        }
+        mutating func zoom(percent: Float) {
+            let width = topRight.x - bottomLeft.x
+            let widthDelta = width / 100 * percent
+            let widthDeltaHalf = widthDelta / 2
+            let height = topRight.y - bottomLeft.y
+            let heightDelta = height / 100 * percent
+            let heightDeltaHalf = heightDelta / 2
+            bottomLeft.x += widthDeltaHalf
+            topRight.x -= widthDeltaHalf
+            bottomLeft.y += heightDeltaHalf
+            topRight.y -= heightDeltaHalf
+        }
+        mutating func adjustAspectRatio(drawableWidth: Float, drawableHeight: Float) {
+            let width = topRight.x - bottomLeft.x
+            let height = topRight.y - bottomLeft.y
+            if (drawableWidth > drawableHeight) {
+                let widthDelta = drawableWidth / drawableHeight * height - width
+                let widthDeltaHalf = widthDelta / 2
+                bottomLeft.x -= widthDeltaHalf
+                topRight.x += widthDeltaHalf
+            }
+            if (drawableWidth < drawableHeight) {
+                let heightDelta = drawableHeight / drawableWidth * width - height
+                let heightDeltaHalf = heightDelta / 2
+                bottomLeft.y -= heightDeltaHalf
+                topRight.y += heightDeltaHalf
+            }
+        }
     }
     
     private let device: MTLDevice
@@ -79,50 +119,24 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         
         super.init()
         
-        self.pan1()
-        self.zoom1()
+        self.schedulePan()
+        self.scheduleZoom()
     }
     
-    func pan1() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1/20) {
-            self.pan2()
-            self.pan1()
+    func schedulePan() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1 / 20) {
+            self.region.pan(percent: 0.1)
+            self.needRender = true
+            self.schedulePan()
         }
     }
     
-    func pan2() {
-        let pc = Float(0.1)
-        let rw = region.topRight.x - region.bottomLeft.x
-        let rwDelta = rw / 100 * pc
-        region.bottomLeft.x -= rwDelta
-        region.topRight.x -= rwDelta
-        let rh = region.topRight.y - region.bottomLeft.y
-        let rhDelta = rh / 100 * pc
-        region.bottomLeft.y -= rhDelta
-        region.topRight.y -= rhDelta
-        needRender = true
-    }
-    
-    func zoom1() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1/20) {
-            self.zoom2()
-            self.zoom1()
+    func scheduleZoom() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1 / 20) {
+            self.region.zoom(percent: 0.5)
+            self.needRender = true
+            self.scheduleZoom()
         }
-    }
-    
-    func zoom2() {
-        let pc = Float(0.5)
-        let rw = region.topRight.x - region.bottomLeft.x
-        let rh = region.topRight.y - region.bottomLeft.y
-        let rwDelta = rw / 100 * pc
-        let rhDelta = rh / 100 * pc
-        let rwDeltaHalf = rwDelta / 2
-        let rhDeltaHalf = rhDelta / 2
-        region.bottomLeft.x += rwDeltaHalf
-        region.topRight.x -= rwDeltaHalf
-        region.bottomLeft.y += rhDeltaHalf
-        region.topRight.y -= rhDeltaHalf
-        needRender = true
     }
     
     func onSwitchFractal() {
@@ -166,10 +180,10 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     
     private func renderMandelbrot(renderEncoder: MTLRenderCommandEncoder) {
         let vertices = [
-            FractalVertex(position: simd_float2(1, 1), region: simd_float2(region.topRight.x, region.topRight.y)),
-            FractalVertex(position: simd_float2(-1, 1), region: simd_float2(region.bottomLeft.x, region.topRight.y)),
-            FractalVertex(position: simd_float2(1, -1), region: simd_float2(region.topRight.x, region.bottomLeft.y)),
-            FractalVertex(position: simd_float2(-1, -1), region: simd_float2(region.bottomLeft.x, region.bottomLeft.y))
+            FractalVertex(position: simd_float2(1, 1), region: region.topRight),
+            FractalVertex(position: simd_float2(-1, 1), region: region.topLeft),
+            FractalVertex(position: simd_float2(1, -1), region: region.bottomRight),
+            FractalVertex(position: simd_float2(-1, -1), region: region.bottomLeft)
         ]
         let verticesLength = MemoryLayout<FractalVertex>.stride * vertices.count
         uniforms.maxIterations = Int32(maxIterations)
@@ -187,10 +201,10 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     
     private func renderJulia(renderEncoder: MTLRenderCommandEncoder, juliaConstant: simd_float2) {
         let vertices = [
-            FractalVertex(position: simd_float2(1, 1), region: simd_float2(region.topRight.x, region.topRight.y)),
-            FractalVertex(position: simd_float2(-1, 1), region: simd_float2(region.bottomLeft.x, region.topRight.y)),
-            FractalVertex(position: simd_float2(1, -1), region: simd_float2(region.topRight.x, region.bottomLeft.y)),
-            FractalVertex(position: simd_float2(-1, -1), region: simd_float2(region.bottomLeft.x, region.bottomLeft.y))
+            FractalVertex(position: simd_float2(1, 1), region: region.topRight),
+            FractalVertex(position: simd_float2(-1, 1), region: region.topLeft),
+            FractalVertex(position: simd_float2(1, -1), region: region.bottomRight),
+            FractalVertex(position: simd_float2(-1, -1), region: region.bottomLeft)
         ]
         let verticesLength = MemoryLayout<FractalVertex>.stride * vertices.count
         uniforms.maxIterations = Int32(maxIterations)
@@ -212,7 +226,6 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         if !needRender {
             return
         }
-        needRender = false
         if let commandBuffer = commandQueue.makeCommandBuffer() {
             let renderPassDescriptor = view.currentRenderPassDescriptor
             if let renderPassDescriptor = renderPassDescriptor,
@@ -231,31 +244,12 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             commandBuffer.commit()
             commandBuffer.waitUntilCompleted()
         }
+        needRender = false
     }
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-        
-        let cw = Float(size.width)
-        let ch = Float(size.height)
-        let rw = region.topRight.x - region.bottomLeft.x
-        let rh = region.topRight.y - region.bottomLeft.y
-        
-        if (cw > ch) {
-            let rwNew = cw * rh / ch
-            let rwDelta = rwNew - rw
-            let rwDeltaHalf = rwDelta / 2
-            region.bottomLeft.x -= rwDeltaHalf
-            region.topRight.x += rwDeltaHalf
-        }
-        
-        if (cw < ch) {
-            let rhNew = ch * rw / cw
-            let rhDelta = rhNew - rh
-            let rhDeltaHalf = rhDelta / 2
-            region.bottomLeft.y -= rhDeltaHalf
-            region.topRight.y += rhDeltaHalf
-        }
-        
+        region.adjustAspectRatio(drawableWidth: Float(size.width),
+                                 drawableHeight: Float(size.height))
         needRender = true
     }
 }

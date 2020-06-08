@@ -17,66 +17,24 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         case julia
     }
     
-    private struct Region {
-        var bottomLeft: simd_float2
-        var topRight: simd_float2
-        var topLeft: simd_float2 { return simd_float2(bottomLeft.x, topRight.y) }
-        var bottomRight: simd_float2 { return simd_float2(topRight.x, bottomLeft.y) }
-        mutating func pan(percent: Float) {
-            let width = topRight.x - bottomLeft.x
-            let widthDelta = width / 100 * percent
-            let height = topRight.y - bottomLeft.y
-            let heightDelta = height / 100 * percent
-            bottomLeft.x -= widthDelta
-            topRight.x -= widthDelta
-            bottomLeft.y -= heightDelta
-            topRight.y -= heightDelta
-        }
-        mutating func zoom(percent: Float) {
-            let width = topRight.x - bottomLeft.x
-            let widthDelta = width / 100 * percent
-            let widthDeltaHalf = widthDelta / 2
-            let height = topRight.y - bottomLeft.y
-            let heightDelta = height / 100 * percent
-            let heightDeltaHalf = heightDelta / 2
-            bottomLeft.x += widthDeltaHalf
-            topRight.x -= widthDeltaHalf
-            bottomLeft.y += heightDeltaHalf
-            topRight.y -= heightDeltaHalf
-        }
-        mutating func adjustAspectRatio(drawableWidth: Float, drawableHeight: Float) {
-            let width = topRight.x - bottomLeft.x
-            let height = topRight.y - bottomLeft.y
-            if (drawableWidth > drawableHeight) {
-                let widthDelta = drawableWidth / drawableHeight * height - width
-                let widthDeltaHalf = widthDelta / 2
-                bottomLeft.x -= widthDeltaHalf
-                topRight.x += widthDeltaHalf
-            }
-            if (drawableWidth < drawableHeight) {
-                let heightDelta = drawableHeight / drawableWidth * width - height
-                let heightDeltaHalf = heightDelta / 2
-                bottomLeft.y -= heightDeltaHalf
-                topRight.y += heightDeltaHalf
-            }
-        }
-    }
-    
+    private let mtkView: MTKView
     private let device: MTLDevice
     private let commandQueue: MTLCommandQueue
     private let mandelbrotPipelineState: MTLRenderPipelineState
     private let juliaPipelineState: MTLRenderPipelineState
     private var uniforms: FractalUniforms
     private let uniformsLength = MemoryLayout<FractalUniforms>.stride
-    private var maxIterations: Int
-    private var colorMaps: [[simd_float4]]
-    private var colorMapIndex: Int
-    private var fractal = Fractal.mandelbrot
-    private var region: Region
-    private var juliaConstant: simd_float2
+    private var colorMaps = [jet, gistStern, ocean, gnuplot, gnuplot2]
+    private var currentColorMapIndex = 0
+    private var currentFractal = Fractal.mandelbrot
+    private var currentJuliaConstant = simd_float2(-0.22334650856389987, -0.6939525691699604)
+    private var currentMaxIterations = 120
+    private var currentRegion = Region(bottomLeft: simd_float2(-0.22, -0.7),
+                                       topRight: simd_float2(-0.21, -0.69))
     private var needRender = true
     
     init?(mtkView: MTKView, bundle: Bundle? = nil) {
+        self.mtkView = mtkView
         self.device = mtkView.device!
         guard let queue = self.device.makeCommandQueue() else { return nil }
         self.commandQueue = queue
@@ -108,51 +66,74 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             simd_float4(0, 0, 1, 0),
             simd_float4(0, 0, 0, 1)))
         
-        maxIterations = 120
-        colorMaps = [jet, gistStern, oceanData]
-        colorMapIndex = 0
-        
-        region = Region(bottomLeft: simd_float2(-0.22, -0.7),
-                        topRight: simd_float2(-0.21, -0.69))
-        
-        juliaConstant = simd_float2(-0.22334650856389987, -0.6939525691699604)
-        
         super.init()
         
+        self.displayRegion(region: currentRegion, fractal: currentFractal, colorMapIndex: currentColorMapIndex)
         self.schedulePan()
         self.scheduleZoom()
     }
     
-    func schedulePan() {
+    private func schedulePan() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1 / 20) {
-            self.region.pan(percent: 0.1)
+            self.currentRegion.pan(percent: 0.1)
             self.needRender = true
             self.schedulePan()
         }
     }
     
-    func scheduleZoom() {
+    private func scheduleZoom() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1 / 20) {
-            self.region.zoom(percent: 0.5)
+            self.currentRegion.zoom(percent: 0.5)
             self.needRender = true
             self.scheduleZoom()
         }
     }
     
+    private func chooseRegion() {
+        let x = Float.random(in: -2...0.75)
+        let y = Float.random(in: -1.5...1.5)
+        let w = Float.random(in: 0.01...0.5)
+        let h = Float.random(in: 0.01...0.5)
+        let bottomLeft = simd_float2(x - w, y - h)
+        let topRight = simd_float2(x + w, y + h)
+        let region = Region(bottomLeft: bottomLeft, topRight: topRight)
+        // TODO: evaluate the region and detect/reject boring regions
+        // i.e. regions that have very few unique colours.
+        DispatchQueue.main.asyncAfter(deadline: .now() + Double(10)) {
+            let fractal = self.currentFractal == .mandelbrot ? Fractal.julia : Fractal.mandelbrot
+            let colorMapIndex = self.colorMaps.indices.randomElement()!
+            self.displayRegion(region: region, fractal: fractal, colorMapIndex: colorMapIndex)
+        }
+    }
+    
+    private func displayRegion(region: Region, fractal: Fractal, colorMapIndex: Int) {
+        currentFractal = fractal
+        currentRegion = region
+        let size = mtkView.drawableSize
+        let width = Float(size.width)
+        let height = Float(size.height)
+        currentRegion.adjustAspectRatio(drawableWidth: width, drawableHeight: height)
+        currentColorMapIndex = colorMapIndex
+        needRender = true
+        DispatchQueue.global().asyncAfter(deadline: .now()) {
+            self.chooseRegion()
+        }
+    }
+    
     func onSwitchFractal() {
-        switch fractal {
+        switch currentFractal {
         case .mandelbrot:
-            fractal = .julia
+            currentFractal = .julia
             break
         case .julia:
-            fractal = .mandelbrot
+            currentFractal = .mandelbrot
             break
         }
         needRender = true
     }
     
     func onSwitchColorMap() {
-        colorMapIndex = (colorMapIndex + 1) % colorMaps.count
+        currentColorMapIndex = (currentColorMapIndex + 1) % colorMaps.count
         needRender = true
     }
     
@@ -180,14 +161,14 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     
     private func renderMandelbrot(renderEncoder: MTLRenderCommandEncoder) {
         let vertices = [
-            FractalVertex(position: simd_float2(1, 1), region: region.topRight),
-            FractalVertex(position: simd_float2(-1, 1), region: region.topLeft),
-            FractalVertex(position: simd_float2(1, -1), region: region.bottomRight),
-            FractalVertex(position: simd_float2(-1, -1), region: region.bottomLeft)
+            FractalVertex(position: simd_float2(1, 1), region: currentRegion.topRight),
+            FractalVertex(position: simd_float2(-1, 1), region: currentRegion.topLeft),
+            FractalVertex(position: simd_float2(1, -1), region: currentRegion.bottomRight),
+            FractalVertex(position: simd_float2(-1, -1), region: currentRegion.bottomLeft)
         ]
         let verticesLength = MemoryLayout<FractalVertex>.stride * vertices.count
-        uniforms.maxIterations = Int32(maxIterations)
-        let colorMap = colorMaps[colorMapIndex]
+        uniforms.maxIterations = Int32(currentMaxIterations)
+        let colorMap = colorMaps[currentColorMapIndex]
         let colorMapLength = MemoryLayout<simd_float4>.stride * colorMap.count
         renderEncoder.pushDebugGroup("Draw Fractal")
         renderEncoder.setRenderPipelineState(mandelbrotPipelineState)
@@ -201,14 +182,14 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     
     private func renderJulia(renderEncoder: MTLRenderCommandEncoder, juliaConstant: simd_float2) {
         let vertices = [
-            FractalVertex(position: simd_float2(1, 1), region: region.topRight),
-            FractalVertex(position: simd_float2(-1, 1), region: region.topLeft),
-            FractalVertex(position: simd_float2(1, -1), region: region.bottomRight),
-            FractalVertex(position: simd_float2(-1, -1), region: region.bottomLeft)
+            FractalVertex(position: simd_float2(1, 1), region: currentRegion.topRight),
+            FractalVertex(position: simd_float2(-1, 1), region: currentRegion.topLeft),
+            FractalVertex(position: simd_float2(1, -1), region: currentRegion.bottomRight),
+            FractalVertex(position: simd_float2(-1, -1), region: currentRegion.bottomLeft)
         ]
         let verticesLength = MemoryLayout<FractalVertex>.stride * vertices.count
-        uniforms.maxIterations = Int32(maxIterations)
-        let colorMap = colorMaps[colorMapIndex]
+        uniforms.maxIterations = Int32(currentMaxIterations)
+        let colorMap = colorMaps[currentColorMapIndex]
         let colorMapLength = MemoryLayout<simd_float4>.stride * colorMap.count
         renderEncoder.pushDebugGroup("Draw Fractal")
         renderEncoder.setRenderPipelineState(juliaPipelineState)
@@ -230,12 +211,12 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             let renderPassDescriptor = view.currentRenderPassDescriptor
             if let renderPassDescriptor = renderPassDescriptor,
                 let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) {
-                switch fractal {
+                switch currentFractal {
                 case .mandelbrot:
                     renderMandelbrot(renderEncoder: renderEncoder)
                     break
                 case .julia:
-                    renderJulia(renderEncoder: renderEncoder, juliaConstant: juliaConstant)
+                    renderJulia(renderEncoder: renderEncoder, juliaConstant: currentJuliaConstant)
                     break
                 }
                 renderEncoder.endEncoding()
@@ -248,8 +229,9 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     }
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-        region.adjustAspectRatio(drawableWidth: Float(size.width),
-                                 drawableHeight: Float(size.height))
+        let width = Float(size.width)
+        let height = Float(size.height)
+        currentRegion.adjustAspectRatio(drawableWidth: width, drawableHeight: height)
         needRender = true
     }
 }

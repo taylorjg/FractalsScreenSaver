@@ -13,7 +13,9 @@ import Foundation
 
 let jet = buildColorMap(colorMapData: JET_DATA)
 let gistStern = buildColorMap(colorMapData: GIST_STERN_DATA)
-let oceanData = buildColorMap2(colorMapData: OCEAN_DATA)
+let ocean = buildColorMap2(colorMapData: OCEAN_DATA)
+let gnuplot = buildColorMap2(colorMapData: GNUPLOT_DATA)
+let gnuplot2 = buildColorMap2(colorMapData: GNUPLOT2_DATA)
 
 private struct ColorMapData {
     let red: [[Float]]
@@ -73,6 +75,16 @@ private let OCEAN_DATA = ColorMapData2(
     red: gnuplotPaletteFunctions[23],
     green: gnuplotPaletteFunctions[28],
     blue: gnuplotPaletteFunctions[3])
+
+private let GNUPLOT_DATA = ColorMapData2(
+    red: gnuplotPaletteFunctions[7],
+    green: gnuplotPaletteFunctions[5],
+    blue: gnuplotPaletteFunctions[15])
+
+private let GNUPLOT2_DATA = ColorMapData2(
+    red: gnuplotPaletteFunctions[30],
+    green: gnuplotPaletteFunctions[31],
+    blue: gnuplotPaletteFunctions[32])
 
 private let gnuplotPaletteFunctions: [(Float) -> Float] = [
 { (_: Float) -> Float in 0 },

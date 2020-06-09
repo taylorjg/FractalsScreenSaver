@@ -33,20 +33,15 @@ vertex FractalInOut vertexShader(uint vertexID [[vertex_id]],
     return out;
 }
 
-float4 loop(int maxIterations, constant float4 *colorMap, float cr, float ci, float zr, float zi)
+float4 loop(int maxIterations, constant float4 *colorMap, float2 c, float2 z)
 {
     int divergesAt = maxIterations - 1;
     for (int iteration = 0; iteration < maxIterations; iteration++) {
-        float zr2 = zr * zr;
-        float zi2 = zi * zi;
-        float zrNext = zr2 - zi2 + cr;
-        float ziNext = 2.0 * zr * zi + ci;
-        zr = zrNext;
-        zi = ziNext;
-        if (zr2 + zi2 >= 4.0) {
+        if (dot(z, z) >= 4.0) {
             divergesAt = iteration;
             break;
         }
+        z = float2(z.x * z.x - z.y * z.y + c.x, 2.0 * z.x * z.y + c.y);
     }
     int index = 256 * divergesAt / maxIterations;
     return colorMap[index];
@@ -56,11 +51,7 @@ fragment float4 mandelbrotShader(FractalInOut in [[stage_in]],
                                  constant FractalUniforms &uniforms [[buffer(0)]],
                                  constant float4 *colorMap [[buffer(1)]])
 {
-    float cr = in.region.x;
-    float ci = in.region.y;
-    float zr = 0.0;
-    float zi = 0.0;
-    return loop(uniforms.maxIterations, colorMap, cr, ci, zr, zi);
+    return loop(uniforms.maxIterations, colorMap, in.region, float2());
 }
 
 fragment float4 juliaShader(FractalInOut in [[stage_in]],
@@ -68,9 +59,5 @@ fragment float4 juliaShader(FractalInOut in [[stage_in]],
                             constant float4 *colorMap [[buffer(1)]],
                             constant float2 &juliaConstant [[buffer(2)]])
 {
-    float cr = juliaConstant.x;
-    float ci = juliaConstant.y;
-    float zr = in.region.x;
-    float zi = in.region.y;
-    return loop(uniforms.maxIterations, colorMap, cr, ci, zr, zi);
+    return loop(uniforms.maxIterations, colorMap, juliaConstant, in.region);
 }

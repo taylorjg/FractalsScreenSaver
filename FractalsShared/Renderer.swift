@@ -17,6 +17,17 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         case julia
     }
     
+    private struct Configuration {
+        let fractal: Fractal
+        let juliaConstant: simd_float2
+        let region: Region
+        let colorMapIndex: Int
+        let maxIterations: Int
+        // let panDirection: PanDirection
+        // let panSpeed: Float
+        // let zoomSpeed: Float
+    }
+    
     private let mtkView: MTKView
     private let device: MTLDevice
     private let commandQueue: MTLCommandQueue
@@ -32,6 +43,7 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     private var currentRegion = Region(bottomLeft: simd_float2(-0.22, -0.7),
                                        topRight: simd_float2(-0.21, -0.69))
     private var needRender = true
+    private let backgroundDispatchQueue = DispatchQueue.global(qos: .background)
     
     init?(mtkView: MTKView, bundle: Bundle? = nil) {
         self.mtkView = mtkView
@@ -68,7 +80,11 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         
         super.init()
         
-        self.displayRegion(region: currentRegion, fractal: currentFractal, colorMapIndex: currentColorMapIndex)
+//        let configuation = Configuration(fractal: .mandelbrot,
+//                                         region: currentRegion,
+//                                         colorMapIndex: 0,
+//                                         maxIterations: 120)
+        self.displayConfiguration(region: currentRegion, fractal: currentFractal, colorMapIndex: currentColorMapIndex)
         self.schedulePan()
         self.scheduleZoom()
     }
@@ -89,24 +105,75 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         }
     }
     
-    private func chooseRegion() {
-        let x = Float.random(in: -2...0.75)
-        let y = Float.random(in: -1.5...1.5)
-        let w = Float.random(in: 0.01...0.5)
-        let h = Float.random(in: 0.01...0.5)
-        let bottomLeft = simd_float2(x - w, y - h)
-        let topRight = simd_float2(x + w, y + h)
-        let region = Region(bottomLeft: bottomLeft, topRight: topRight)
-        // TODO: evaluate the region and detect/reject boring regions
-        // i.e. regions that have very few unique colours.
-        DispatchQueue.main.asyncAfter(deadline: .now() + Double(10)) {
-            let fractal = self.currentFractal == .mandelbrot ? Fractal.julia : Fractal.mandelbrot
+    private func evaluatePoint(region: Region, point: simd_float2) -> Int {
+        var z = simd_float2(point)
+        let c = simd_float2()
+        var iteration = 0
+        while iteration < currentMaxIterations {
+            if simd_dot(z, z) >= 4 {
+                break
+            }
+            let zSquared = simd_float2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y)
+            z = zSquared + c
+            iteration += 1
+        }
+        return iteration
+    }
+    
+    private func evaluatePoints(region: Region, gridSize: Int) -> [Int] {
+        let w = region.topRight.x - region.bottomLeft.x
+        let h = region.topRight.y - region.bottomLeft.y
+        let dx = w / Float(gridSize + 1)
+        let dy = h / Float(gridSize + 1)
+        var results = [Int]()
+        for row in 1...gridSize {
+            let y = region.bottomLeft.y + Float(row) * dy
+            for col in 1...gridSize {
+                let x = region.bottomLeft.x + Float(col) * dx
+                let point = simd_float2(x, y)
+                results.append(evaluatePoint(region: region, point: point))
+            }
+        }
+        return results
+    }
+    
+    private func isInteresting(region: Region) -> Bool {
+        let gridSize = 5
+        let values = evaluatePoints(region: region, gridSize: gridSize)
+        let filteredValues = values.filter { value in value < currentMaxIterations }
+        if filteredValues.count <= 2 {
+            return false
+        }
+        let arguments = [NSExpression(forConstantValue: filteredValues)]
+        let expression = NSExpression(forFunction: "stddev:", arguments: arguments)
+        let standardDeviation = (expression.expressionValue(with: nil, context: nil) as! NSNumber).floatValue
+        print("\(filteredValues); \(standardDeviation)")
+        return standardDeviation >= 4
+    }
+    
+    private func createRandomRegion() -> Region {
+        let cx = Float.random(in: -2...0.75)
+        let cy = Float.random(in: -1.5...1.5)
+        let sz = Float.random(in: 0.001...0.5)
+        let bottomLeft = simd_float2(cx - sz, cy - sz)
+        let topRight = simd_float2(cx + sz, cy + sz)
+        return Region(bottomLeft: bottomLeft, topRight: topRight)
+    }
+    
+    private func chooseConfiguration() {
+        var region = createRandomRegion()
+        while !isInteresting(region: region) {
+            region = createRandomRegion()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + Double(2)) {
+            // let fractal = self.currentFractal == .mandelbrot ? Fractal.julia : Fractal.mandelbrot
+            let fractal = Fractal.mandelbrot
             let colorMapIndex = self.colorMaps.indices.randomElement()!
-            self.displayRegion(region: region, fractal: fractal, colorMapIndex: colorMapIndex)
+            self.displayConfiguration(region: region, fractal: fractal, colorMapIndex: colorMapIndex)
         }
     }
     
-    private func displayRegion(region: Region, fractal: Fractal, colorMapIndex: Int) {
+    private func displayConfiguration(region: Region, fractal: Fractal, colorMapIndex: Int) {
         currentFractal = fractal
         currentRegion = region
         let size = mtkView.drawableSize
@@ -115,9 +182,7 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         currentRegion.adjustAspectRatio(drawableWidth: width, drawableHeight: height)
         currentColorMapIndex = colorMapIndex
         needRender = true
-        DispatchQueue.global().asyncAfter(deadline: .now()) {
-            self.chooseRegion()
-        }
+        backgroundDispatchQueue.async(execute: chooseConfiguration)
     }
     
     func onSwitchFractal() {

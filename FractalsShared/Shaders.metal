@@ -35,15 +35,14 @@ vertex FractalInOut vertexShader(uint vertexID [[vertex_id]],
 
 float4 loop(int maxIterations, constant float4 *colorMap, float2 c, float2 z)
 {
-    int divergesAt = maxIterations - 1;
-    for (int iteration = 0; iteration < maxIterations; iteration++) {
-        if (dot(z, z) >= 4.0) {
-            divergesAt = iteration;
-            break;
-        }
-        z = float2(z.x * z.x - z.y * z.y + c.x, 2.0 * z.x * z.y + c.y);
+    int iteration = 0;
+    while (iteration < maxIterations) {
+        if (dot(z, z) >= 4.0) break;
+        float2 zSquared = float2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y);
+        z = zSquared + c;
+        iteration++;
     }
-    int index = 256 * divergesAt / maxIterations;
+    int index = 256 * iteration / maxIterations;
     return colorMap[index];
 }
 

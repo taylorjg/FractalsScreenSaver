@@ -39,7 +39,7 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     private var currentColorMapIndex = 0
     private var currentFractal = Fractal.mandelbrot
     private var currentJuliaConstant = simd_float2(-0.22334650856389987, -0.6939525691699604)
-    private var currentMaxIterations = 120
+    private var currentMaxIterations = 128
     private var currentRegion = Region(bottomLeft: simd_float2(-0.22, -0.7),
                                        topRight: simd_float2(-0.21, -0.69))
     private var needRender = true
@@ -106,8 +106,8 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     }
     
     private func evaluatePoint(region: Region, point: simd_float2) -> Int {
-        var z = simd_float2(point)
-        let c = simd_float2()
+        var z = simd_float2()
+        let c = simd_float2(point)
         var iteration = 0
         while iteration < currentMaxIterations {
             if simd_dot(z, z) >= 4 {
@@ -138,7 +138,7 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     }
     
     private func isInteresting(region: Region) -> Bool {
-        let gridSize = 5
+        let gridSize = 2
         let values = evaluatePoints(region: region, gridSize: gridSize)
         let filteredValues = values.filter { value in value < currentMaxIterations }
         if filteredValues.count <= 2 {
@@ -147,25 +147,28 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         let arguments = [NSExpression(forConstantValue: filteredValues)]
         let expression = NSExpression(forFunction: "stddev:", arguments: arguments)
         let standardDeviation = (expression.expressionValue(with: nil, context: nil) as! NSNumber).floatValue
-        print("\(filteredValues); \(standardDeviation)")
-        return standardDeviation >= 4
+//        print("\(filteredValues); \(standardDeviation)")
+        return standardDeviation >= 2
     }
     
     private func createRandomRegion() -> Region {
         let cx = Float.random(in: -2...0.75)
         let cy = Float.random(in: -1.5...1.5)
-        let sz = Float.random(in: 0.001...0.5)
+        let sz = Float.random(in: 0.0001...0.001)
         let bottomLeft = simd_float2(cx - sz, cy - sz)
         let topRight = simd_float2(cx + sz, cy + sz)
         return Region(bottomLeft: bottomLeft, topRight: topRight)
     }
     
     private func chooseConfiguration() {
+        var iterations = 0
         var region = createRandomRegion()
         while !isInteresting(region: region) {
             region = createRandomRegion()
+            iterations += 1
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + Double(2)) {
+//        print("[chooseConfiguration] iterations: \(iterations)")
+        DispatchQueue.main.asyncAfter(deadline: .now() + Double(5)) {
             // let fractal = self.currentFractal == .mandelbrot ? Fractal.julia : Fractal.mandelbrot
             let fractal = Fractal.mandelbrot
             let colorMapIndex = self.colorMaps.indices.randomElement()!

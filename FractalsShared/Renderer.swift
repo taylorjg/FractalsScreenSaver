@@ -138,17 +138,9 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     }
     
     private func isInteresting(region: Region) -> Bool {
-        let gridSize = 2
+        let gridSize = 3
         let values = evaluatePoints(region: region, gridSize: gridSize)
-        let filteredValues = values.filter { value in value < currentMaxIterations }
-        if filteredValues.count <= 2 {
-            return false
-        }
-        let arguments = [NSExpression(forConstantValue: filteredValues)]
-        let expression = NSExpression(forFunction: "stddev:", arguments: arguments)
-        let standardDeviation = (expression.expressionValue(with: nil, context: nil) as! NSNumber).floatValue
-//        print("\(filteredValues); \(standardDeviation)")
-        return standardDeviation >= 2
+        return Set(values).count == gridSize * gridSize
     }
     
     private func createRandomRegion() -> Region {

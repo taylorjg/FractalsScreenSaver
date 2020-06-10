@@ -99,7 +99,7 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     
     private func scheduleZoom() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1 / 20) {
-            self.currentRegion.zoom(percent: 0.5)
+            self.currentRegion.zoom(percent: 1)
             self.needRender = true
             self.scheduleZoom()
         }
@@ -138,15 +138,15 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     }
     
     private func isInteresting(region: Region) -> Bool {
-        let gridSize = 3
+        let gridSize = 5
         let values = evaluatePoints(region: region, gridSize: gridSize)
-        return Set(values).count == gridSize * gridSize
+        return Float(Set(values).count) >= Float(values.count) * 0.6
     }
     
     private func createRandomRegion() -> Region {
         let cx = Float.random(in: -2...0.75)
         let cy = Float.random(in: -1.5...1.5)
-        let sz = Float.random(in: 0.0001...0.001)
+        let sz = Float.random(in: 0.0005...0.01)
         let bottomLeft = simd_float2(cx - sz, cy - sz)
         let topRight = simd_float2(cx + sz, cy + sz)
         return Region(bottomLeft: bottomLeft, topRight: topRight)
@@ -159,7 +159,6 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             region = createRandomRegion()
             iterations += 1
         }
-//        print("[chooseConfiguration] iterations: \(iterations)")
         DispatchQueue.main.asyncAfter(deadline: .now() + Double(5)) {
             // let fractal = self.currentFractal == .mandelbrot ? Fractal.julia : Fractal.mandelbrot
             let fractal = Fractal.mandelbrot

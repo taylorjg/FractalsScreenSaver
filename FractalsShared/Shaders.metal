@@ -42,7 +42,7 @@ float4 loop(int maxIterations, constant float4 *colorMap, float2 c, float2 z)
         z = zSquared + c;
         iteration++;
     }
-    int index = 256 * iteration / maxIterations;
+    int index = 255 * iteration / maxIterations;
     return colorMap[index];
 }
 

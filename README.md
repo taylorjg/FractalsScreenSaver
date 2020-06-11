@@ -14,7 +14,7 @@ The missing piece in my understanding was the rasterization of primitives and th
 
 # TODO
 
-* Periodically, choose a random fractal region to show
+* ~~Periodically, choose a random fractal region to show~~
 * Add a config sheet with various settings
 * Add a thumbnail image that will appear in Screen Saver preferences
 

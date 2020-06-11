@@ -80,13 +80,14 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         
         super.init()
         
-//        let configuation = Configuration(fractal: .mandelbrot,
-//                                         region: currentRegion,
-//                                         colorMapIndex: 0,
-//                                         maxIterations: 120)
-        self.displayConfiguration(region: currentRegion, fractal: currentFractal, colorMapIndex: currentColorMapIndex)
-        self.schedulePan()
-        self.scheduleZoom()
+        let configuation = Configuration(fractal: .mandelbrot,
+                                         juliaConstant: currentJuliaConstant,
+                                         region: currentRegion,
+                                         colorMapIndex: 0,
+                                         maxIterations: 120)
+        displayConfiguration(configuration: configuation)
+        schedulePan()
+        scheduleZoom()
     }
     
     private func schedulePan() {
@@ -105,11 +106,11 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         }
     }
     
-    private func evaluatePoint(region: Region, point: simd_float2) -> Int {
-        var z = simd_float2()
-        let c = simd_float2(point)
+    private func evaluatePoint(configuration: Configuration, point: simd_float2) -> Int {
+        var z = configuration.fractal == .mandelbrot ? simd_float2() : simd_float2(point)
+        let c = configuration.fractal == .mandelbrot ? simd_float2(point) : configuration.juliaConstant
         var iteration = 0
-        while iteration < currentMaxIterations {
+        while iteration < configuration.maxIterations {
             if simd_dot(z, z) >= 4 {
                 break
             }
@@ -120,7 +121,8 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         return iteration
     }
     
-    private func evaluatePoints(region: Region, gridSize: Int) -> [Int] {
+    private func evaluatePoints(configuration: Configuration, gridSize: Int) -> [Int] {
+        let region = configuration.region
         let w = region.topRight.x - region.bottomLeft.x
         let h = region.topRight.y - region.bottomLeft.y
         let dx = w / Float(gridSize + 1)
@@ -131,50 +133,61 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
             for col in 1...gridSize {
                 let x = region.bottomLeft.x + Float(col) * dx
                 let point = simd_float2(x, y)
-                results.append(evaluatePoint(region: region, point: point))
+                results.append(evaluatePoint(configuration: configuration, point: point))
             }
         }
         return results
     }
     
-    private func isInteresting(region: Region) -> Bool {
+    private func isInteresting(configuration: Configuration) -> Bool {
         let gridSize = 5
-        let values = evaluatePoints(region: region, gridSize: gridSize)
+        let values = evaluatePoints(configuration: configuration, gridSize: gridSize)
         return Float(Set(values).count) >= Float(values.count) * 0.6
     }
     
-    private func createRandomRegion() -> Region {
+    private func createRandomConfiguration() -> Configuration {
+        let fractal = [Fractal.mandelbrot, Fractal.julia].randomElement()!
+        let jx = Float.random(in: -2...0.75)
+        let jy = Float.random(in: -1.5...1.5)
+        let juliaConstant = simd_float2(jx, jy)
         let cx = Float.random(in: -2...0.75)
         let cy = Float.random(in: -1.5...1.5)
-        let sz = Float.random(in: 0.0005...0.01)
+        let sz = fractal == .mandelbrot
+            ? Float.random(in: 0.001...0.01)
+            : Float.random(in: 0.05...0.5)
         let bottomLeft = simd_float2(cx - sz, cy - sz)
         let topRight = simd_float2(cx + sz, cy + sz)
-        return Region(bottomLeft: bottomLeft, topRight: topRight)
+        var region = Region(bottomLeft: bottomLeft, topRight: topRight)
+        let drawableWidth = Float(mtkView.drawableSize.width)
+        let drawableHeight = Float(mtkView.drawableSize.height)
+        region.adjustAspectRatio(drawableWidth: drawableWidth, drawableHeight: drawableHeight)
+        let colorMapIndex = self.colorMaps.indices.randomElement()!
+        let maxIterations = Int.random(in: 40...256)
+        return Configuration(fractal: fractal,
+                             juliaConstant: juliaConstant,
+                             region: region,
+                             colorMapIndex: colorMapIndex,
+                             maxIterations: maxIterations)
     }
     
     private func chooseConfiguration() {
         var iterations = 0
-        var region = createRandomRegion()
-        while !isInteresting(region: region) {
-            region = createRandomRegion()
+        var configuration = createRandomConfiguration()
+        while !isInteresting(configuration: configuration) {
+            configuration = createRandomConfiguration()
             iterations += 1
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + Double(5)) {
-            // let fractal = self.currentFractal == .mandelbrot ? Fractal.julia : Fractal.mandelbrot
-            let fractal = Fractal.mandelbrot
-            let colorMapIndex = self.colorMaps.indices.randomElement()!
-            self.displayConfiguration(region: region, fractal: fractal, colorMapIndex: colorMapIndex)
+            self.displayConfiguration(configuration: configuration)
         }
     }
     
-    private func displayConfiguration(region: Region, fractal: Fractal, colorMapIndex: Int) {
-        currentFractal = fractal
-        currentRegion = region
-        let size = mtkView.drawableSize
-        let width = Float(size.width)
-        let height = Float(size.height)
-        currentRegion.adjustAspectRatio(drawableWidth: width, drawableHeight: height)
-        currentColorMapIndex = colorMapIndex
+    private func displayConfiguration(configuration: Configuration) {
+        currentFractal = configuration.fractal
+        currentJuliaConstant = configuration.juliaConstant
+        currentRegion = configuration.region
+        currentColorMapIndex = configuration.colorMapIndex
+        currentMaxIterations = configuration.maxIterations
         needRender = true
         backgroundDispatchQueue.async(execute: chooseConfiguration)
     }

@@ -11,11 +11,17 @@ import Foundation
 // https://github.com/matplotlib/matplotlib/blob/master/lib/matplotlib/_cm.py
 // https://github.com/matplotlib/matplotlib/blob/master/lib/matplotlib/colors.py
 
-let jet = buildColorMap(colorMapData: JET_DATA)
-let gistStern = buildColorMap(colorMapData: GIST_STERN_DATA)
-let ocean = buildColorMap2(colorMapData: OCEAN_DATA)
-let gnuplot = buildColorMap2(colorMapData: GNUPLOT_DATA)
-let gnuplot2 = buildColorMap2(colorMapData: GNUPLOT2_DATA)
+private let jet = buildColorMap(colorMapData: JET_DATA)
+private let gistStern = buildColorMap(colorMapData: GIST_STERN_DATA)
+private let ocean = buildColorMap2(colorMapData: OCEAN_DATA)
+private let gnuplot = buildColorMap2(colorMapData: GNUPLOT_DATA)
+private let gnuplot2 = buildColorMap2(colorMapData: GNUPLOT2_DATA)
+private let greyscale = (0...255).map { n -> simd_float4 in
+    let grey = Float(n) / 255
+    return simd_float4(grey, grey, grey, 1)
+}
+
+let colorMaps = [jet, gistStern, ocean, gnuplot, gnuplot2, greyscale]
 
 private struct ColorMapData {
     let red: [[Float]]

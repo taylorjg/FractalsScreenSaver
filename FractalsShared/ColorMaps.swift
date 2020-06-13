@@ -12,16 +12,19 @@ import Foundation
 // https://github.com/matplotlib/matplotlib/blob/master/lib/matplotlib/colors.py
 
 private let jet = buildColorMap(colorMapData: JET_DATA)
+private let hot = buildColorMap(colorMapData: HOT_DATA)
 private let gistStern = buildColorMap(colorMapData: GIST_STERN_DATA)
+private let spring = buildColorMap(colorMapData: SPRING_DATA)
+private let summer = buildColorMap(colorMapData: SUMMER_DATA)
+private let autumn = buildColorMap(colorMapData: AUTUMN_DATA)
+private let winter = buildColorMap(colorMapData: WINTER_DATA)
 private let ocean = buildColorMap2(colorMapData: OCEAN_DATA)
 private let gnuplot = buildColorMap2(colorMapData: GNUPLOT_DATA)
 private let gnuplot2 = buildColorMap2(colorMapData: GNUPLOT2_DATA)
-private let greyscale = (0...255).map { n -> simd_float4 in
-    let grey = Float(n) / 255
-    return simd_float4(grey, grey, grey, 1)
-}
+private let afmhot = buildColorMap2(colorMapData: AFMHOT_DATA)
+private let rainbow = buildColorMap2(colorMapData: RAINBOW_DATA)
 
-let colorMaps = [jet, gistStern, ocean, gnuplot, gnuplot2, greyscale]
+let colorMaps = [jet, hot, gistStern, gnuplot, gnuplot2, afmhot]
 
 private struct ColorMapData {
     let red: [[Float]]
@@ -59,6 +62,24 @@ private let JET_DATA = ColorMapData(
         [1, 0, 0]
 ])
 
+private let HOT_DATA = ColorMapData(
+    red: [
+        [0, 0.0416, 0.0416],
+        [0.365079, 1.000000, 1.000000],
+        [1, 1, 1]
+    ],
+    green: [
+        [0, 0, 0],
+        [0.365079, 0.000000, 0.000000],
+        [0.746032, 1.000000, 1.000000],
+        [1, 1, 1]
+    ],
+    blue: [
+        [0, 0, 0],
+        [0.746032, 0.000000, 0.000000],
+        [1, 1, 1]
+])
+
 private let GIST_STERN_DATA = ColorMapData(
     red: [
         [0, 0, 0],
@@ -77,6 +98,62 @@ private let GIST_STERN_DATA = ColorMapData(
         [1, 0, 0]
 ])
 
+private let SPRING_DATA = ColorMapData(
+    red: [
+        [0, 1, 1],
+        [1, 1, 1]
+    ],
+    green: [
+        [0, 0, 0],
+        [1, 1, 1]
+    ],
+    blue: [
+        [0, 1, 1],
+        [1, 0, 0]
+])
+
+private let SUMMER_DATA = ColorMapData(
+    red: [
+        [0, 0, 0],
+        [1, 1, 1]
+    ],
+    green: [
+        [0, 0.5, 0.5],
+        [1, 1, 1]
+    ],
+    blue: [
+        [0, 0.4, 0.4],
+        [1, 0.4, 0.4]
+])
+
+private let AUTUMN_DATA = ColorMapData(
+    red: [
+        [0, 1, 1],
+        [1, 1, 1]
+    ],
+    green: [
+        [0, 0, 0],
+        [1, 1, 1]
+    ],
+    blue: [
+        [0, 0, 0],
+        [1, 0, 0]
+])
+
+private let WINTER_DATA = ColorMapData(
+    red: [
+        [0, 0, 0],
+        [1, 0, 0]
+    ],
+    green: [
+        [0, 0, 0],
+        [1, 1, 1]
+    ],
+    blue: [
+        [0, 1, 1],
+        [1, 0.5, 0.5]
+])
+
 private let OCEAN_DATA = ColorMapData2(
     red: gnuplotPaletteFunctions[23],
     green: gnuplotPaletteFunctions[28],
@@ -91,6 +168,16 @@ private let GNUPLOT2_DATA = ColorMapData2(
     red: gnuplotPaletteFunctions[30],
     green: gnuplotPaletteFunctions[31],
     blue: gnuplotPaletteFunctions[32])
+
+private let AFMHOT_DATA = ColorMapData2(
+    red: gnuplotPaletteFunctions[34],
+    green: gnuplotPaletteFunctions[35],
+    blue: gnuplotPaletteFunctions[36])
+
+private let RAINBOW_DATA = ColorMapData2(
+    red: gnuplotPaletteFunctions[33],
+    green: gnuplotPaletteFunctions[13],
+    blue: gnuplotPaletteFunctions[10])
 
 private let gnuplotPaletteFunctions: [(Float) -> Float] = [
 { (_: Float) -> Float in 0 },

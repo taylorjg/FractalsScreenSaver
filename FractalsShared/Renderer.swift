@@ -140,20 +140,18 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     }
     
     private func isInteresting(configuration: Configuration) -> Bool {
-        let gridSize = 5
+        let gridSize = 8
         let values = evaluatePoints(configuration: configuration, gridSize: gridSize)
         return Float(Set(values).count) >= Float(values.count) * 0.6
     }
     
     private func createRandomConfiguration() -> Configuration {
         let fractal = [Fractal.mandelbrot, Fractal.julia].randomElement()!
-        let jx = Float.random(in: -2...0.75)
-        let jy = Float.random(in: -1.5...1.5)
-        let juliaConstant = simd_float2(jx, jy)
         let cx = Float.random(in: -2...0.75)
         let cy = Float.random(in: -1.5...1.5)
+        let juliaConstant = simd_float2(cx, cy)
         let sz = fractal == .mandelbrot
-            ? Float.random(in: 0.001...0.01)
+            ? Float.random(in: 0.005...0.05)
             : Float.random(in: 0.05...0.5)
         let bottomLeft = simd_float2(cx - sz, cy - sz)
         let topRight = simd_float2(cx + sz, cy + sz)
@@ -161,7 +159,10 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
         let drawableWidth = Float(mtkView.drawableSize.width)
         let drawableHeight = Float(mtkView.drawableSize.height)
         region.adjustAspectRatio(drawableWidth: drawableWidth, drawableHeight: drawableHeight)
-        let colorMapIndex = colorMaps.indices.randomElement()!
+        var colorMapIndex = currentConfiguration.colorMapIndex
+        while colorMapIndex == currentConfiguration.colorMapIndex {
+            colorMapIndex = colorMaps.indices.randomElement()!
+        }
         let maxIterations = Int.random(in: 40...256)
         return Configuration(fractal: fractal,
                              juliaConstant: juliaConstant,
@@ -184,6 +185,9 @@ class Renderer: NSObject, MTKViewDelegate, KeyboardControlDelegate {
     
     private func displayConfiguration(configuration: Configuration) {
         currentConfiguration = configuration
+        let drawableWidth = Float(mtkView.drawableSize.width)
+        let drawableHeight = Float(mtkView.drawableSize.height)
+        currentConfiguration.region.adjustAspectRatio(drawableWidth: drawableWidth, drawableHeight: drawableHeight)
         needRender = true
         backgroundDispatchQueue.async(execute: chooseConfiguration)
     }
